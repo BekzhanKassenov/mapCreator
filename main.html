@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title> Map creator </title>
+    <script type="text/JavaScript" src="jquery.js"> </script>
+    <script type="text/javascript" src="mapcreator.js"></script>
+
+    <script type="text/javascript">
+        var mapCreator = null;
+        $(document).ready(function() {
+            var canvas = document.getElementById('mapDrawer');
+            mapCreator = new MapCreator(canvas);
+            mapCreator.setCanvasBackground('map.png');
+
+            $("#addNodeButton").on("click", addNode);
+        });
+
+        var nodeLabel;
+
+        function addNode(e) {
+            nodeLabel = prompt("Enter name of the node");
+
+            $("#messages").html("Click on the location of the node");
+            $("#mapDrawer").on("click", onCanvasClick);
+        }
+
+        function onCanvasClick(e) {
+            var posX = $(this).offset().left,
+                posY = $(this).offset().top;
+
+            var x = e.pageX - posX,
+                y = e.pageY - posY;
+
+            if (mapCreator.addNode(nodeLabel, x, y)) {
+                var rowCode = "<tr><td>" + nodeLabel + "</td><td>" + x + "</td><td>" + y + "</td></tr>";
+
+                $("#nodesTable").append($(rowCode));
+                $("#messages").html("");
+            }
+            $(this).off("click");
+        }
+    </script>
+
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <div id="canvasWrapper">
+        <canvas width="500px" height="500px" id="mapDrawer">
+            Please, update your browser's version in order to use this application.
+        </canvas>
+    </div>
+
+    <div id="editor">
+        <div id="messages">
+        </div>
+        <div id="nodesEditor">
+            <button id="addNodeButton"> Add node </button>
+            <table id="nodesTable">
+                <thead>
+                    <td> Label </td> <td> X </td> <td> Y </td>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="edgesEditor">
+        </div>
+    </div>
+</body>
+</html>
