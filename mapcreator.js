@@ -26,7 +26,10 @@ function Node(label, x, y) {
 	}
 
 	this.drawName = function(context) {
-
+		context.font = "30px Comic Sans MS";
+		context.fillStyle = "red";
+		context.textAlign = "center";
+		context.fillText(this.label, this.x, this.y - 40);
 	}
 
 	this.draw = function(context) {
@@ -39,20 +42,36 @@ function Node(label, x, y) {
 // Edge declaration
 //================================================================================
 
-function Edge(labelOne, labelTwo) {
-	this.labelOne = labelOne;
-	this.labelTwo = labelTwo;
+function Edge(nodeOne, nodeTwo) {
+	this.nodeOne = nodeOne;
+	this.nodeTwo = nodeTwo;
 
 	this.equals = function(otherEdge) {
-		if (otherEdge.labelOne && otherEdge.labelTwo) {
-			return (otherEdge.labelOne === this.labelOne && otherEdge.labelTwo === this.labelTwo) || (otherEdge.labelTwo === this.labelOne && otherEdge.labelOne === this.labelTwo);
+		if (otherEdge.nodeOne && otherEdge.nodeTwo) {
+			if (otherEdge.nodeOne.label === nodeOne.label && otherEdge.nodeTwo.label === nodeTwo.label) {
+				return true;
+			}
+	
+			if (otherEdge.nodeOne.label === nodeTwo.label && otherEdge.nodeTwo.label === nodeOne.label) {
+				return true;
+			}
 		}
 
 		return false;
 	}
 
 	this.draw = function(context) {
+		context.lineWidth = 3;
+		context.strokeStyle = "#000000";
+		context.lineCap = 'round';
 
+		context.beginPath();
+
+		context.moveTo(this.nodeOne.x, this.nodeOne.y);
+		context.lineTo(this.nodeTwo.x, this.nodeTwo.y);
+
+		context.stroke();
+		context.closePath();
 	}
 }
 
@@ -63,11 +82,19 @@ function Graph() {
 	this.nodes = new Array();
 	this.edges = new Array();
 
-	this.addNode = function(label, x, y) {
+	this.getNodeByLabel = function(label) {
 		for (var i = 0; i < this.nodes.length; i++) {
 			if (this.nodes[i].label === label) {
-				return false;
+				return this.nodes[i];
 			}
+		}
+
+		return null;
+	}
+
+	this.addNode = function(label, x, y) {
+		if (this.getNodeByLabel(label) !== null) {
+			return false;
 		}
 
 		this.nodes.push(new Node(label, x, y));
@@ -79,7 +106,14 @@ function Graph() {
 			return false;
 		}
 
-		var edge = new Edge(labelOne, labelTwo);
+		var nodeOne = this.getNodeByLabel(labelOne);
+		var nodeTwo = this.getNodeByLabel(labelTwo);
+
+		if (nodeOne === null || nodeTwo === null) {
+			return false;
+		}
+
+		var edge = new Edge(nodeOne, nodeTwo);
 		for (var i = 0; i < this.edges.length; i++) {
 			if (this.edges[i].equals(edge)) {
 				return false;
@@ -94,8 +128,8 @@ function Graph() {
 		var i = 0;
 		var result = false;
 		while (i < this.nodes.length) {
-			if (nodes[i].label === label) {
-				nodes.splice(i, 1);
+			if (this.nodes[i].label === label) {
+				this.nodes.splice(i, 1);
 				result = true;
 			} else {
 				i++;
@@ -104,8 +138,8 @@ function Graph() {
 
 		i = 0;
 		while (i < this.edges.length) {
-			if (edges[i].labelOne === label || edges[i].labelTwo === label) {
-				edges.splice(i, 1);
+			if (this.edges[i].nodeOne.label === label || this.edges[i].nodeTwo.label === label) {
+				this.edges.splice(i, 1);
 				result = true;
 			} else {
 				i++;
@@ -116,12 +150,25 @@ function Graph() {
 	}
 
 	this.removeEdge = function(labelOne, labelTwo) {
-		var deleteEdge = new Edge(labelOne, labelTwo);
+		if (labelOne === labelTwo) {
+			return false;
+		}
+
+		var nodeOne = this.getNodeByLabel(labelOne);
+		var nodeTwo = this.getNodeByLabel(labelTwo);
+
+		if (nodeOne === null || nodeTwo === null) {
+			return false;
+		}
+
+		var deleteEdge = new Edge(nodeOne, nodeTwo);
 		var i = 0;
 
+		var result = false;
+
 		while (i < this.edges.length) {
-			if (edges[i].equals(deleteEdge)) {
-				edges.splice(i, 1);
+			if (this.edges[i].equals(deleteEdge)) {
+				this.edges.splice(i, 1);
 				result = true;
 			} else {
 				i++;
@@ -202,5 +249,9 @@ function MapCreator(canvas) {
 
 		this.drawGraph();
 		return true;
+	}
+
+	this.generateJSON = function() {
+		return JSON.stringify(this.graph);
 	}
 }

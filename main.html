@@ -2,7 +2,7 @@
 <html>
 <head>
     <title> Map creator </title>
-    <script type="text/JavaScript" src="jquery.js"> </script>
+    <script type="text/javascript" src="jquery.js"> </script>
     <script type="text/javascript" src="mapcreator.js"></script>
 
     <script type="text/javascript">
@@ -13,14 +13,53 @@
             mapCreator.setCanvasBackground('map.png');
 
             $("#addNodeButton").on("click", addNode);
+            $("#addEdgeButton").on("click", addEdge);
         });
 
         var nodeLabel;
+
+        function removeEdge(elem, labelOne, labelTwo) {
+            $(elem).parent().parent().remove();
+            if (!mapCreator.removeEdge(labelOne, labelTwo)) {
+                $("#messages").html("Error in edge removal");
+            } else {
+                $("#messages").html("Edge was successfully removed");
+            }
+        }
+
+        function addEdge(e) {
+            var labelOne = prompt("Enter name of the first label");
+            var labelTwo = prompt("Enter name of the second label");
+
+            if (mapCreator.addEdge(labelOne, labelTwo)) {
+                var rowCode = "<tr>";
+                rowCode += "<td>" + labelOne + "</td>";
+                rowCode += "<td>" + labelTwo + "</td>";
+                rowCode += "<td>" + "<button onclick=\"removeEdge(this, '" + labelOne + "', '" + labelTwo + "')\" >Remove </button>" + "</td>";
+                rowCode += "</tr>"
+                $("#edgesTable").append(rowCode);
+            } else {
+                $("#messages").html("Error in edge adding");
+            }
+        }
+
+        function removeNode(elem, label) {
+            $(elem).parent().parent().remove();
+
+            if (mapCreator.removeNode(label)) {
+                $("#messages").html("Node was deleted successfully");
+            } else {
+                $("#messages").html("Error in node deletion");
+            }
+        }
 
         function addNode(e) {
             nodeLabel = prompt("Enter name of the node");
 
             $("#messages").html("Click on the location of the node");
+
+            $("#addNodeButton").prop("disabled", true);
+            $("#addEdgeButton").prop("disabled", true);
             $("#mapDrawer").on("click", onCanvasClick);
         }
 
@@ -32,12 +71,26 @@
                 y = e.pageY - posY;
 
             if (mapCreator.addNode(nodeLabel, x, y)) {
-                var rowCode = "<tr><td>" + nodeLabel + "</td><td>" + x + "</td><td>" + y + "</td></tr>";
+                var rowCode = "<tr>";
+                rowCode += "<td>" + nodeLabel + "</td>";
+                rowCode += "<td>" + x + "</td>";
+                rowCode += "<td>" + y + "</td>";
+                rowCode += "<td>" + "<button onclick=\"removeNode(this, '" + nodeLabel + "')\"> Remove </button> </td>"
+                rowCode += "</tr>";
 
                 $("#nodesTable").append($(rowCode));
                 $("#messages").html("");
+            } else {
+                $("#messages").html("Error in node adding");
             }
+
+            $("#addNodeButton").prop("disabled", false);
+            $("#addEdgeButton").prop("disabled", false);
             $(this).off("click");
+        }
+
+        function generateJSON() {
+            $("#result").html(mapCreator.generateJSON());
         }
     </script>
 
@@ -65,7 +118,20 @@
         </div>
 
         <div id="edgesEditor">
+            <button id="addEdgeButton"> Add edge </button>
+            <table id="edgesTable">
+                <thead>
+                    <tr><td>From</td><td>To</td></tr>
+                </thead>
+                <tbody>
+                    
+                </tbody>
+            </table>
         </div>
+
+        <button onclick="generateJSON()"> Generate JSON </button>
+        
+        <textarea name="Text1" cols="20" rows="5" id="result"></textarea>
     </div>
 </body>
 </html>
