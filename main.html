@@ -3,13 +3,17 @@
 <head>
     <title> Map creator </title>
     <script type="text/javascript" src="jquery.js"> </script>
+    <script type="text/javascript" src="graph.js"></script>
     <script type="text/javascript" src="mapcreator.js"></script>
 
     <script type="text/javascript">
         var mapCreator = null;
         $(document).ready(function() {
             var canvas = document.getElementById('mapDrawer');
-            mapCreator = new MapCreator(canvas);
+            var nodesTable = $("#nodesTable");
+            var edgesTable = $("#edgesTable");
+
+            mapCreator = new MapCreator(canvas, nodesTable, edgesTable);
             mapCreator.setCanvasBackground('map.png');
 
             $("#addNodeButton").on("click", addNode);
@@ -18,8 +22,7 @@
 
         var nodeLabel;
 
-        function removeEdge(elem, labelOne, labelTwo) {
-            $(elem).parent().parent().remove();
+        function removeEdge(labelOne, labelTwo) {
             if (!mapCreator.removeEdge(labelOne, labelTwo)) {
                 $("#messages").html("Error in edge removal");
             } else {
@@ -32,20 +35,13 @@
             var labelTwo = prompt("Enter name of the second label");
 
             if (mapCreator.addEdge(labelOne, labelTwo)) {
-                var rowCode = "<tr>";
-                rowCode += "<td>" + labelOne + "</td>";
-                rowCode += "<td>" + labelTwo + "</td>";
-                rowCode += "<td>" + "<button onclick=\"removeEdge(this, '" + labelOne + "', '" + labelTwo + "')\" >Remove </button>" + "</td>";
-                rowCode += "</tr>"
-                $("#edgesTable").append(rowCode);
+                $("#messages").html("Edge was added successfully");
             } else {
                 $("#messages").html("Error in edge adding");
             }
         }
 
-        function removeNode(elem, label) {
-            $(elem).parent().parent().remove();
-
+        function removeNode(label) {
             if (mapCreator.removeNode(label)) {
                 $("#messages").html("Node was deleted successfully");
             } else {
@@ -71,15 +67,7 @@
                 y = e.pageY - posY;
 
             if (mapCreator.addNode(nodeLabel, x, y)) {
-                var rowCode = "<tr>";
-                rowCode += "<td>" + nodeLabel + "</td>";
-                rowCode += "<td>" + x + "</td>";
-                rowCode += "<td>" + y + "</td>";
-                rowCode += "<td>" + "<button onclick=\"removeNode(this, '" + nodeLabel + "')\"> Remove </button> </td>"
-                rowCode += "</tr>";
-
-                $("#nodesTable").append($(rowCode));
-                $("#messages").html("");
+                $("#messages").html("Node was added successfully");
             } else {
                 $("#messages").html("Error in node adding");
             }
