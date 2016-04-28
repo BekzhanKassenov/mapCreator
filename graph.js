@@ -47,6 +47,10 @@ function Node(label, x, y) {
 
         $(table).append(rowCode);
     }
+
+    this.toJSON = function() {
+        return '{"label": "' + this.label + '", "x" : "' + this.x + '", "y": "' + this.y + '"}';
+    }
 }
 
 //================================================================================
@@ -93,14 +97,18 @@ function Edge(nodeOne, nodeTwo) {
 
         $(table).append(rowCode);
     }
+
+    this.toJSON = function() {
+        return '{"labelOne" : "' + this.nodeOne.label + '", "labelTwo": "' + this.nodeTwo.label + '"}';
+    }
 }
 
 //================================================================================
 // Graph declaration
 //================================================================================
 function Graph() {
-    this.nodes = new Array();
-    this.edges = new Array();
+    this.nodes = [];
+    this.edges = [];
 
     this.getNodeByLabel = function(label) {
         for (var i = 0; i < this.nodes.length; i++) {
@@ -198,6 +206,11 @@ function Graph() {
         return result;
     }
 
+    this.clear = function() {
+        this.nodes = [];
+        this.edges = [];
+    }
+
     this.draw = function(context) {
         for (var i = 0; i < this.nodes.length; i++) {
             this.nodes[i].draw(context);
@@ -216,5 +229,25 @@ function Graph() {
         for (var i = 0; i < this.edges.length; i++) {
             this.edges[i].addToTable(edgesTable);
         }
+    }
+
+    this.toJSON = function() {
+        var nodesJSON = "";
+        for (var i = 0; i < this.nodes.length; i++) {
+            nodesJSON += this.nodes[i].toJSON();
+            if (i + 1 != this.nodes.length) {
+                nodesJSON += ",";
+            }
+        }
+
+        var edgesJSON = "";
+        for (var i = 0; i < this.edges.length; i++) {
+            edgesJSON += this.edges[i].toJSON();
+            if (i + 1 != this.edges.length) {
+                edgesJSON += ",";
+            }
+        }
+
+        return '{"nodes": [' + nodesJSON + '], "edges": [' + edgesJSON + '] }';
     }
 }

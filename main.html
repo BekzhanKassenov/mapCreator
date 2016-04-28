@@ -14,10 +14,23 @@
             var edgesTable = $("#edgesTable");
 
             mapCreator = new MapCreator(canvas, nodesTable, edgesTable);
-            mapCreator.setCanvasBackground('map.png');
+            mapCreator.setCanvasBackground('map.png', function() {
+                if (typeof(Storage) !== "undefined") {
+                    if (localStorage["graph"] !== "undefined") {
+                        mapCreator.readGraph(localStorage["graph"]);
+                    }
+                }
+            });
 
             $("#addNodeButton").on("click", addNode);
             $("#addEdgeButton").on("click", addEdge);
+
+            window.onunload = function(e) {
+                if (localStorage !== "undefined") {
+                    localStorage["graph"] = mapCreator.generateJSON();
+                }
+                console.log("Saving " + mapCreator.generateJSON());
+            };
         });
 
         var nodeLabel;
